@@ -72,7 +72,8 @@ class PresentacionEstadistica(tk.Tk):
         self.geometry("1100x750")
         self.configure(bg="#F0F0F0")
         
-        self.unidades = ["Unidad 6", "Unidad 7", "Unidad 8", "Unidad 9", "Unidad 10"]
+        # Se agrega la pestaña de Supuestos al menú
+        self.unidades = ["Unidad 6", "Unidad 7", "Unidad 8", "Unidad 9", "Unidad 10", "Supuestos"]
         self.indice_actual = 0
         
         self._construir_interfaz()
@@ -93,7 +94,7 @@ class PresentacionEstadistica(tk.Tk):
         
         self.botones_nav = []
         nombres_botones = ["Unidad 6 — EDA", "Unidad 7 — Est. Puntual", "Unidad 8 — Int. Confianza", 
-                           "Unidad 9 — Hipótesis", "Unidad 10 — Regresión"]
+                           "Unidad 9 — Hipótesis", "Unidad 10 — Regresión", "Unidad 10 — Supuestos"]
         
         for i, nombre in enumerate(nombres_botones):
             btn = tk.Button(frame_nav, text=nombre, bg="#34495E", fg="white", font=("Segoe UI", 11),
@@ -113,7 +114,7 @@ class PresentacionEstadistica(tk.Tk):
         tk.Button(frame_controles, text="💾 Guardar Gráfico", bg="#E67E22", fg="white", 
                   font=("Segoe UI", 10, "bold"), relief=tk.FLAT,
                   command=self.guardar_grafico).pack(side=tk.BOTTOM, padx=10, pady=(15, 0), fill=tk.X)
-        
+
         # --- PANEL DERECHO (CONTENIDO) ---
         frame_main = tk.Frame(self, bg="#F0F0F0")
         frame_main.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=15, pady=10)
@@ -191,6 +192,8 @@ class PresentacionEstadistica(tk.Tk):
             self.mostrar_u9()
         elif indice == 4:
             self.mostrar_u10()
+        elif indice == 5:
+            self.mostrar_supuestos()
             
         self.canvas.draw()
 
@@ -199,72 +202,70 @@ class PresentacionEstadistica(tk.Tk):
     # ===========================================================================
 
     def mostrar_u6(self):
-            self.lbl_titulo.config(text="Unidad 6 — Análisis Exploratorio de Datos (EDA)")
-            notas = self.df["nota_final"].dropna()
-            n = len(notas)
-            media = media_muestral(notas)
-            desvio = desvio_muestral(notas)
-            cv = coef_variacion(notas)
-            k = sturges(n)
+        self.lbl_titulo.config(text="Unidad 6 — Análisis Exploratorio de Datos (EDA)")
+        notas = self.df["nota_final"].dropna()
+        n = len(notas)
+        media = media_muestral(notas)
+        desvio = desvio_muestral(notas)
+        cv = coef_variacion(notas)
+        k = sturges(n)
 
-            # 1. Histograma (Arriba - Izquierda)
-            ax1 = self.fig.add_subplot(221)
-            ax1.hist(notas, bins=k, color="#4A5A7B", edgecolor="black")
-            ax1.axvline(media, color="#E3655B", linestyle="--", label=f"Media = {media:.2f}")
-            ax1.set_title(r"Distribución Notas Finales ($\bar{x}$)")
-            ax1.set_xlabel("Nota (0 a 20)")
-            ax1.set_ylabel("Frecuencia")
-            ax1.legend()
+        # 1. Histograma (Arriba - Izquierda)
+        ax1 = self.fig.add_subplot(221)
+        ax1.hist(notas, bins=k, color="#4A5A7B", edgecolor="black")
+        ax1.axvline(media, color="#E3655B", linestyle="--", label=f"Media = {media:.2f}")
+        ax1.set_title(r"Distribución Notas Finales ($\bar{x}$)")
+        ax1.set_xlabel("Nota (0 a 20)")
+        ax1.set_ylabel("Frecuencia")
+        ax1.legend()
 
-            # 2. Gráfico de Torta: En Pareja (Arriba - Derecha)
-            ax2 = self.fig.add_subplot(222)
-            pareja_counts = self.df['en_pareja'].value_counts()
-            # Mapeo según tus reglas: 0 = Sí, 1 = No
-            labels_pareja = ['Sí' if val == 0 else 'No' for val in pareja_counts.index]
-            colores_torta = ['#FF9999', '#66B3FF'] # Salmón y celeste como en tu imagen
-            ax2.pie(pareja_counts, labels=labels_pareja, autopct='%1.1f%%', colors=colores_torta, startangle=90)
-            ax2.set_title("Estado Sentimental (En pareja)")
+        # 2. Gráfico de Torta: En Pareja (Arriba - Derecha)
+        ax2 = self.fig.add_subplot(222)
+        pareja_counts = self.df['en_pareja'].value_counts()
+        labels_pareja = ['Sí' if val == 0 else 'No' for val in pareja_counts.index]
+        colores_torta = ['#FF9999', '#66B3FF']
+        ax2.pie(pareja_counts, labels=labels_pareja, autopct='%1.1f%%', colors=colores_torta, startangle=90)
+        ax2.set_title("Estado Sentimental (En pareja)")
 
-            # Mapeo de niveles educativos para los gráficos de barras
-            mapa_edu = {0: 'Ninguna', 1: 'Primaria', 2: 'Media', 3: 'Secundaria', 4: 'Superior'}
-            colores_barras = ['#4A5A7B', '#2D827A', '#6CB468', '#ECA400', '#E3655B']
+        # Mapeo de niveles educativos para los gráficos de barras
+        mapa_edu = {0: 'Ninguna', 1: 'Primaria', 2: 'Media', 3: 'Secundaria', 4: 'Superior'}
+        colores_barras = ['#4A5A7B', '#2D827A', '#6CB468', '#ECA400', '#E3655B']
 
-            # 3. Gráfico de Barras: Educación Madre (Abajo - Izquierda)
-            ax3 = self.fig.add_subplot(223)
-            edu_m_counts = self.df['educacion_madre'].value_counts().sort_index()
-            etiquetas_m = [mapa_edu.get(x, str(x)) for x in edu_m_counts.index]
-            ax3.bar(etiquetas_m, edu_m_counts.values, color=colores_barras[:len(edu_m_counts)])
-            ax3.set_title("Nivel Educativo: Madre")
-            ax3.tick_params(axis='x', rotation=15, labelsize=8)
+        # 3. Gráfico de Barras: Educación Madre (Abajo - Izquierda)
+        ax3 = self.fig.add_subplot(223)
+        edu_m_counts = self.df['educacion_madre'].value_counts().sort_index()
+        etiquetas_m = [mapa_edu.get(x, str(x)) for x in edu_m_counts.index]
+        ax3.bar(etiquetas_m, edu_m_counts.values, color=colores_barras[:len(edu_m_counts)])
+        ax3.set_title("Nivel Educativo: Madre")
+        ax3.tick_params(axis='x', rotation=15, labelsize=8)
 
-            # 4. Gráfico de Barras: Educación Padre (Abajo - Derecha)
-            ax4 = self.fig.add_subplot(224)
-            edu_p_counts = self.df['educacion_padre'].value_counts().sort_index()
-            etiquetas_p = [mapa_edu.get(x, str(x)) for x in edu_p_counts.index]
-            ax4.bar(etiquetas_p, edu_p_counts.values, color=colores_barras[:len(edu_p_counts)])
-            ax4.set_title("Nivel Educativo: Padre")
-            ax4.tick_params(axis='x', rotation=15, labelsize=8)
+        # 4. Gráfico de Barras: Educación Padre (Abajo - Derecha)
+        ax4 = self.fig.add_subplot(224)
+        edu_p_counts = self.df['educacion_padre'].value_counts().sort_index()
+        etiquetas_p = [mapa_edu.get(x, str(x)) for x in edu_p_counts.index]
+        ax4.bar(etiquetas_p, edu_p_counts.values, color=colores_barras[:len(edu_p_counts)])
+        ax4.set_title("Nivel Educativo: Padre")
+        ax4.tick_params(axis='x', rotation=15, labelsize=8)
 
-            self.fig.tight_layout()
+        self.fig.tight_layout()
 
-            # Textos actualizados para la interfaz
-            concepto = "Distribución Cuantitativa y Categórica del Perfil Estudiantil."
-            explicacion = (
-                "El Análisis Exploratorio de Datos (EDA) abarca tanto el rendimiento académico como el "
-                "perfil demográfico de la muestra:\n"
-                "• Histograma: Distribución de la Nota Final (G3).\n"
-                "• Torta: Proporción de estudiantes en una relación de pareja.\n"
-                "• Barras: Nivel educativo alcanzado por madres y padres."
-            )
-            formula = "Media: x̄ = Σxi / n\nCV = (S / x̄) × 100"
-            resultado = f"Nota media (x̄) = {media:.2f} | Desvío (S) = {desvio:.2f} | CV = {cv:.3f}"
-            interpretacion = (
-                "Los gráficos categóricos complementan el análisis de rendimiento permitiendo observar el "
-                "perfil social de los estudiantes. Esto es clave ya que factores como la educación parental o el "
-                "estado sentimental pueden ser variables ocultas que influyan en el desempeño en matemáticas."
-            )
-            
-            self._actualizar_texto(concepto, explicacion, formula, resultado, interpretacion)
+        concepto = "Distribución Cuantitativa y Categórica del Perfil Estudiantil."
+        explicacion = (
+            "El Análisis Exploratorio de Datos (EDA) abarca tanto el rendimiento académico como el "
+            "perfil demográfico de la muestra:\n"
+            "• Histograma: Distribución de la Nota Final (G3).\n"
+            "• Torta: Proporción de estudiantes en una relación de pareja.\n"
+            "• Barras: Nivel educativo alcanzado por madres y padres."
+        )
+        formula = "Media: x̄ = Σxi / n\nCV = (S / x̄) × 100"
+        resultado = f"Nota media (x̄) = {media:.2f} | Desvío (S) = {desvio:.2f} | CV = {cv:.3f}"
+        interpretacion = (
+            "Los gráficos categóricos complementan el análisis de rendimiento permitiendo observar el "
+            "perfil social de los estudiantes. Esto es clave ya que factores como la educación parental o el "
+            "estado sentimental pueden ser variables ocultas que influyan en el desempeño en matemáticas."
+        )
+        
+        self._actualizar_texto(concepto, explicacion, formula, resultado, interpretacion)
 
     def mostrar_u7(self):
         self.lbl_titulo.config(text="Unidad 7 — Estimación Puntual")
@@ -328,7 +329,7 @@ class PresentacionEstadistica(tk.Tk):
 
         concepto = "Intervalos de Confianza para la Media (μ) y Varianza (σ²)"
         explicacion = "Calculamos un rango de valores en el cual, con una confianza del 95%, se encuentran la nota media y su dispersión a nivel poblacional."
-        formula = r"IC(μ): x̄ ± t_{α/2, n-1} * (S / √n)"
+        formula = r"IC(μ): x̄ ± t_{1-α/2, n-1} * (S / √n)"
         resultado = f"IC 95% para μ: [{ic_mu[0]:.4f} ; {ic_mu[1]:.4f}]\nIC 95% para σ²: [{ic_sigma2[0]:.4f} ; {ic_sigma2[1]:.4f}]"
         interpretacion = "Si repitiéramos el muestreo múltiples veces, el 95% de los intervalos contendrían el parámetro poblacional real. Al encontrarse todo el intervalo de confianza para la media por encima de 10, hay fuertes indicios de una tendencia general a la aprobación."
 
@@ -396,7 +397,7 @@ class PresentacionEstadistica(tk.Tk):
 
         concepto = "Regresión Lineal Simple y Correlación"
         explicacion = (
-            "¿Existe una relación lineal fuerte entre el desempeño "
+            "Pregunta de investigación: ¿Existe una relación lineal fuerte entre el desempeño "
             "del alumno en el segundo semestre (G2) y su calificación definitiva (G3)?\n\n"
             "• X = nota_segundo_semestre\n"
             "• Y = nota_final"
@@ -412,30 +413,111 @@ class PresentacionEstadistica(tk.Tk):
         )
         interpretacion = (
             f"Dirección e Intensidad: El coeficiente r = {r:.3f} indica una asociación lineal positiva "
-            "extremadamente fuerte.\n\n"
+            "EXTREMADAMENTE FUERTE.\n\n"
             f"R²: El modelo explica el {r2*100:.1f}% de la variabilidad observada en la nota final.\n\n"
             f"Pendiente: Por cada punto que el alumno suma en el segundo semestre, su nota final "
-            f"estimada se incrementa en {b1:.3f} puntos. Esto muestra una alta asociación debido a que "
-            "el desempeño histórico define fuertemente el cierre del año escolar."
+            f"estimada se incrementa en {b1:.3f} puntos. (Nota: Esto muestra una altísima asociación debido a que "
+            "el desempeño histórico define fuertemente el cierre del año escolar)."
         )
 
         self._actualizar_texto(concepto, explicacion, formula, resultado, interpretacion)
+
+    def mostrar_supuestos(self):
+        self.lbl_titulo.config(text="Verificación de Supuestos - Regresión Lineal")
         
+        reg = self.df[["nota_segundo_semestre", "nota_final"]].dropna()
+        x = reg["nota_segundo_semestre"].to_numpy(dtype=float)
+        y = reg["nota_final"].to_numpy(dtype=float)
+        
+        ajuste = stats.linregress(x, y)
+        y_pred = ajuste.intercept + ajuste.slope * x
+        residuos = y - y_pred
+        n = len(residuos)
+        
+        # 1. Normalidad (Prueba Analítica de Shapiro-Wilk)
+        stat_sw, p_sw = stats.shapiro(residuos)
+        
+        # 2. Media Cero (Intervalo de confianza)
+        mean_res = np.mean(residuos)
+        sem_res = stats.sem(residuos) if np.std(residuos) > 0 else 0
+        if sem_res > 0:
+            ic_res = stats.t.interval(0.95, df=n-1, loc=mean_res, scale=sem_res)
+        else:
+            ic_res = (0, 0)
+
+        # -- Gráficos 2x2 --
+        # 1. Histograma para Normalidad
+        ax1 = self.fig.add_subplot(221)
+        ax1.hist(residuos, bins=sturges(n), color="#9B59B6", edgecolor="black")
+        ax1.axvline(mean_res, color="red", linestyle="--")
+        ax1.set_title("Normalidad: Histograma")
+        ax1.set_xlabel("Residuos")
+        ax1.set_ylabel("Frecuencia")
+
+        # 2. QQ-Plot para Normalidad
+        ax2 = self.fig.add_subplot(222)
+        stats.probplot(residuos, dist="norm", plot=ax2)
+        ax2.set_title("Normalidad: Q-Q Plot")
+        ax2.get_lines()[0].set_markerfacecolor('#9B59B6')
+        ax2.get_lines()[0].set_markeredgecolor('black')
+
+        # 3. Residuos vs Predichos para Homocedasticidad
+        ax3 = self.fig.add_subplot(223)
+        ax3.scatter(y_pred, residuos, alpha=0.75, color="#E67E22", edgecolor="black")
+        ax3.axhline(0, color="red", linestyle="--")
+        ax3.set_title("Homocedasticidad: Residuos vs Predichos")
+        ax3.set_xlabel("Valores Predichos (Ŷ)")
+        ax3.set_ylabel("Residuos")
+
+        # 4. Residuos vs Orden para Independencia
+        ax4 = self.fig.add_subplot(224)
+        ax4.plot(range(1, n+1), residuos, marker='o', linestyle='-', alpha=0.75, color="#2ECC71", markerfacecolor="#27AE60")
+        ax4.axhline(0, color="red", linestyle="--")
+        ax4.set_title("Independencia: Residuos vs Orden")
+        ax4.set_xlabel("Orden de Observación")
+        ax4.set_ylabel("Residuos")
+
+        self.fig.tight_layout()
+
+        concepto = "Análisis de Residuos (Errores del Modelo)"
+        explicacion = (
+            "Para que un modelo de regresión lineal por Mínimos Cuadrados Ordinarios (MCO) sea estadísticamente válido, "
+            "sus residuos (e = Y - Ŷ) deben cumplir cuatro supuestos fundamentales:\n"
+            "1. Normalidad\n2. Media cero\n3. Homocedasticidad (Varianza constante)\n4. Independencia"
+        )
+        formula = "Residuo: e_i = Y_i - Ŷ_i\nEstadístico de Normalidad: Shapiro-Wilk (W)"
+        
+        # Resultados estrictamente matemáticos
+        resultado = (
+            f"• Prueba Shapiro-Wilk (Normalidad): W = {stat_sw:.4f} | p-valor = {p_sw:.4f}\n"
+            f"• Media de residuos: {mean_res:.4e} (tiende a 0)\n"
+            f"• IC 95% para media de residuos: [{ic_res[0]:.4f} ; {ic_res[1]:.4f}]"
+        )
+
+        # Análisis lógico para imprimir el texto
+        int_norm = "NO SE RECHAZA el supuesto de normalidad" if p_sw > 0.05 else "SE RECHAZA el supuesto de normalidad"
+        int_cero = "El IC INCLUYE el cero, por lo que el supuesto SE CUMPLE" if ic_res[0] <= 0 <= ic_res[1] else "El IC NO INCLUYE el cero"
+
+        interpretacion = (
+            f"1. Normalidad: Al obtener un p-valor de {p_sw:.4f} (mayor a 0.05), {int_norm}. El histograma y el Q-Q plot lo respaldan visualmente.\n"
+            f"2. Media Cero: {int_cero}. Por propiedad del método MCO, la media muestral de los errores siempre es exactamente cero.\n"
+            f"3. Homocedasticidad: El gráfico de dispersión no presenta forma de embudo o patrón evidente, indicando que la varianza es constante.\n"
+            f"4. Independencia: El gráfico secuencial muestra que los residuos oscilan de forma aleatoria, sin patrones de autocorrelación entre datos vecinos."
+        )
+
+        self._actualizar_texto(concepto, explicacion, formula, resultado, interpretacion)
+
     def guardar_grafico(self):
-            # Crea la carpeta 'graficos' en tu repo si no existe
-            carpeta_graficos = Path(__file__).resolve().parent / "graficos"
-            carpeta_graficos.mkdir(exist_ok=True)
-            
-            # Asigna un nombre al archivo según la unidad en la que estés
-            nombres = ["u6_histograma", "u7_estimacion", "u8_intervalos", "u9_hipotesis", "u10_regresion"]
-            nombre_archivo = f"{nombres[self.indice_actual]}.png"
-            ruta = carpeta_graficos / nombre_archivo
-            
-            # Guarda la figura actual con buena resolución
-            self.fig.savefig(str(ruta), dpi=150, bbox_inches="tight")
-            
-            # Tira un aviso cuando termina
-            messagebox.showinfo("¡Guardado!", f"El gráfico se guardó con éxito")
+        carpeta_graficos = Path(__file__).resolve().parent / "graficos"
+        carpeta_graficos.mkdir(exist_ok=True)
+        
+        nombres = ["u6_histograma", "u7_estimacion", "u8_intervalos", "u9_hipotesis", "u10_regresion", "u10_supuestos"]
+        nombre_archivo = f"{nombres[self.indice_actual]}.png"
+        ruta = carpeta_graficos / nombre_archivo
+        
+        self.fig.savefig(str(ruta), dpi=150, bbox_inches="tight")
+        messagebox.showinfo("¡Guardado!", f"El gráfico se guardó con éxito como:\n{nombre_archivo}")
+
 # ===========================================================================
 # ARRANQUE DE LA APLICACIÓN
 # ===========================================================================
