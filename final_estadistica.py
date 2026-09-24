@@ -72,8 +72,15 @@ class PresentacionEstadistica(tk.Tk):
         self.geometry("1100x750")
         self.configure(bg="#F0F0F0")
         
-        # Se agrega la pestaña de Supuestos al menú
-        self.unidades = ["Unidad 6", "Unidad 7", "Unidad 8", "Unidad 9", "Unidad 10", "Supuestos"]
+        # Definición de las nuevas pestañas desdobladas
+        self.unidades = [
+            "Unidad 6 — EDA (Gráficos)", "Unidad 6 — EDA (Análisis)",
+            "Unidad 7 — Est. Puntual (Gráfico)", "Unidad 7 — Est. Puntual (Análisis)",
+            "Unidad 8 — Int. Confianza (Gráficos)", "Unidad 8 — Int. Confianza (Análisis)",
+            "Unidad 9 — Hipótesis (Gráfico)", "Unidad 9 — Hipótesis (Análisis)",
+            "Unidad 10 — Regresión (Gráfico)", "Unidad 10 — Regresión (Análisis)",
+            "Unidad 10 — Supuestos (Gráficos)", "Unidad 10 — Supuestos (Análisis)"
+        ]
         self.indice_actual = 0
         
         self._construir_interfaz()
@@ -86,34 +93,31 @@ class PresentacionEstadistica(tk.Tk):
         style.configure("Title.TLabel", font=("Segoe UI", 16, "bold"), background="#F0F0F0")
         
         # --- PANEL IZQUIERDO (NAVEGACIÓN) ---
-        frame_nav = tk.Frame(self, bg="#2C3E50", width=200)
+        frame_nav = tk.Frame(self, bg="#2C3E50", width=220)
         frame_nav.pack(side=tk.LEFT, fill=tk.Y)
         
         titulo_nav = tk.Label(frame_nav, text="UNIDADES", bg="#2C3E50", fg="white", font=("Segoe UI", 14, "bold"))
-        titulo_nav.pack(pady=20)
+        titulo_nav.pack(pady=15)
         
         self.botones_nav = []
-        nombres_botones = ["Unidad 6 — EDA", "Unidad 7 — Est. Puntual", "Unidad 8 — Int. Confianza", 
-                           "Unidad 9 — Hipótesis", "Unidad 10 — Regresión", "Unidad 10 — Supuestos"]
-        
-        for i, nombre in enumerate(nombres_botones):
-            btn = tk.Button(frame_nav, text=nombre, bg="#34495E", fg="white", font=("Segoe UI", 11),
+        for i, nombre in enumerate(self.unidades):
+            btn = tk.Button(frame_nav, text=nombre, bg="#34495E", fg="white", font=("Segoe UI", 10),
                             relief=tk.FLAT, activebackground="#1ABC9C", activeforeground="white",
                             command=lambda idx=i: self.cargar_unidad(idx))
-            btn.pack(fill=tk.X, padx=10, pady=5)
+            btn.pack(fill=tk.X, padx=10, pady=2)
             self.botones_nav.append(btn)
             
         frame_controles = tk.Frame(frame_nav, bg="#2C3E50")
-        frame_controles.pack(side=tk.BOTTOM, fill=tk.X, pady=20)
+        frame_controles.pack(side=tk.BOTTOM, fill=tk.X, pady=15)
         
-        tk.Button(frame_controles, text="← Anterior", bg="#1ABC9C", fg="white", relief=tk.FLAT,
-                  command=self.unidad_anterior).pack(side=tk.LEFT, padx=10, expand=True, fill=tk.X)
-        tk.Button(frame_controles, text="Siguiente →", bg="#1ABC9C", fg="white", relief=tk.FLAT,
-                  command=self.unidad_siguiente).pack(side=tk.RIGHT, padx=10, expand=True, fill=tk.X)
+        tk.Button(frame_controles, text="← Ant", bg="#1ABC9C", fg="white", relief=tk.FLAT,
+                  command=self.unidad_anterior).pack(side=tk.LEFT, padx=5, expand=True, fill=tk.X)
+        tk.Button(frame_controles, text="Sig →", bg="#1ABC9C", fg="white", relief=tk.FLAT,
+                  command=self.unidad_siguiente).pack(side=tk.RIGHT, padx=5, expand=True, fill=tk.X)
 
         tk.Button(frame_controles, text="💾 Guardar Gráfico", bg="#E67E22", fg="white", 
                   font=("Segoe UI", 10, "bold"), relief=tk.FLAT,
-                  command=self.guardar_grafico).pack(side=tk.BOTTOM, padx=10, pady=(15, 0), fill=tk.X)
+                  command=self.guardar_grafico).pack(side=tk.BOTTOM, padx=5, pady=(15, 0), fill=tk.X)
 
         # --- PANEL DERECHO (CONTENIDO) ---
         frame_main = tk.Frame(self, bg="#F0F0F0")
@@ -122,22 +126,21 @@ class PresentacionEstadistica(tk.Tk):
         self.lbl_titulo = ttk.Label(frame_main, text="", style="Title.TLabel")
         self.lbl_titulo.pack(anchor=tk.W, pady=(0, 10))
         
-        self.fig = plt.Figure(figsize=(8, 4), dpi=100)
+        # Elementos dinámicos
+        self.fig = plt.Figure(figsize=(8, 6), dpi=100)
         self.canvas = FigureCanvasTkAgg(self.fig, master=frame_main)
-        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        self.canvas_widget = self.canvas.get_tk_widget()
         
-        frame_texto = tk.Frame(frame_main)
-        frame_texto.pack(fill=tk.BOTH, expand=False, pady=10)
-        
-        scroll = tk.Scrollbar(frame_texto)
+        self.frame_texto = tk.Frame(frame_main)
+        scroll = tk.Scrollbar(self.frame_texto)
         scroll.pack(side=tk.RIGHT, fill=tk.Y)
         
-        self.text_area = tk.Text(frame_texto, height=12, wrap=tk.WORD, yscrollcommand=scroll.set,
-                                 font=("Segoe UI", 11), bg="#FAFAFA", relief=tk.SOLID, bd=1)
+        self.text_area = tk.Text(self.frame_texto, wrap=tk.WORD, yscrollcommand=scroll.set,
+                                 font=("Segoe UI", 12), bg="#FAFAFA", relief=tk.SOLID, bd=1)
         self.text_area.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scroll.config(command=self.text_area.yview)
         
-        self.text_area.tag_configure("header", font=("Segoe UI", 12, "bold"), foreground="#2980B9")
+        self.text_area.tag_configure("header", font=("Segoe UI", 13, "bold"), foreground="#2980B9")
 
     def _actualizar_texto(self, concepto, explicacion, formula, resultado, interpretacion):
         self.text_area.config(state=tk.NORMAL)
@@ -165,9 +168,9 @@ class PresentacionEstadistica(tk.Tk):
     def resaltar_boton(self, indice):
         for i, btn in enumerate(self.botones_nav):
             if i == indice:
-                btn.config(bg="#1ABC9C", font=("Segoe UI", 11, "bold"))
+                btn.config(bg="#1ABC9C", font=("Segoe UI", 10, "bold"))
             else:
-                btn.config(bg="#34495E", font=("Segoe UI", 11, "normal"))
+                btn.config(bg="#34495E", font=("Segoe UI", 10, "normal"))
 
     def unidad_anterior(self):
         if self.indice_actual > 0:
@@ -180,37 +183,62 @@ class PresentacionEstadistica(tk.Tk):
     def cargar_unidad(self, indice):
         self.indice_actual = indice
         self.resaltar_boton(indice)
+        
+        # Limpiar áreas
+        self.canvas_widget.pack_forget()
+        self.frame_texto.pack_forget()
         self.fig.clear()
         
+        # Renderizar en base al índice seleccionado
         if indice == 0:
-            self.mostrar_u6()
+            self.canvas_widget.pack(fill=tk.BOTH, expand=True)
+            self.mostrar_u6_graficos()
         elif indice == 1:
-            self.mostrar_u7()
+            self.frame_texto.pack(fill=tk.BOTH, expand=True, pady=10)
+            self.mostrar_u6_analisis()
         elif indice == 2:
-            self.mostrar_u8()
+            self.canvas_widget.pack(fill=tk.BOTH, expand=True)
+            self.mostrar_u7_graficos()
         elif indice == 3:
-            self.mostrar_u9()
+            self.frame_texto.pack(fill=tk.BOTH, expand=True, pady=10)
+            self.mostrar_u7_analisis()
         elif indice == 4:
-            self.mostrar_u10()
+            self.canvas_widget.pack(fill=tk.BOTH, expand=True)
+            self.mostrar_u8_graficos()
         elif indice == 5:
-            self.mostrar_supuestos()
+            self.frame_texto.pack(fill=tk.BOTH, expand=True, pady=10)
+            self.mostrar_u8_analisis()
+        elif indice == 6:
+            self.canvas_widget.pack(fill=tk.BOTH, expand=True)
+            self.mostrar_u9_graficos()
+        elif indice == 7:
+            self.frame_texto.pack(fill=tk.BOTH, expand=True, pady=10)
+            self.mostrar_u9_analisis()
+        elif indice == 8:
+            self.canvas_widget.pack(fill=tk.BOTH, expand=True)
+            self.mostrar_u10_graficos()
+        elif indice == 9:
+            self.frame_texto.pack(fill=tk.BOTH, expand=True, pady=10)
+            self.mostrar_u10_analisis()
+        elif indice == 10:
+            self.canvas_widget.pack(fill=tk.BOTH, expand=True)
+            self.mostrar_supuestos_graficos()
+        elif indice == 11:
+            self.frame_texto.pack(fill=tk.BOTH, expand=True, pady=10)
+            self.mostrar_supuestos_analisis()
             
         self.canvas.draw()
 
     # ===========================================================================
-    # ANÁLISIS DE UNIDADES
+    # UNIDAD 6
     # ===========================================================================
-
-    def mostrar_u6(self):
-        self.lbl_titulo.config(text="Unidad 6 — Análisis Exploratorio de Datos (EDA)")
+    def mostrar_u6_graficos(self):
+        self.lbl_titulo.config(text="Unidad 6 — EDA (Gráficos)")
         notas = self.df["nota_final"].dropna()
         n = len(notas)
         media = media_muestral(notas)
-        desvio = desvio_muestral(notas)
-        cv = coef_variacion(notas)
         k = sturges(n)
 
-        # 1. Histograma (Arriba - Izquierda)
         ax1 = self.fig.add_subplot(221)
         ax1.hist(notas, bins=k, color="#4A5A7B", edgecolor="black")
         ax1.axvline(media, color="#E3655B", linestyle="--", label=f"Media = {media:.2f}")
@@ -219,7 +247,6 @@ class PresentacionEstadistica(tk.Tk):
         ax1.set_ylabel("Frecuencia")
         ax1.legend()
 
-        # 2. Gráfico de Torta: En Pareja (Arriba - Derecha)
         ax2 = self.fig.add_subplot(222)
         pareja_counts = self.df['en_pareja'].value_counts()
         labels_pareja = ['Sí' if val == 0 else 'No' for val in pareja_counts.index]
@@ -227,11 +254,9 @@ class PresentacionEstadistica(tk.Tk):
         ax2.pie(pareja_counts, labels=labels_pareja, autopct='%1.1f%%', colors=colores_torta, startangle=90)
         ax2.set_title("Estado Sentimental (En pareja)")
 
-        # Mapeo de niveles educativos para los gráficos de barras
         mapa_edu = {0: 'Ninguna', 1: 'Primaria', 2: 'Media', 3: 'Secundaria', 4: 'Superior'}
         colores_barras = ['#4A5A7B', '#2D827A', '#6CB468', '#ECA400', '#E3655B']
 
-        # 3. Gráfico de Barras: Educación Madre (Abajo - Izquierda)
         ax3 = self.fig.add_subplot(223)
         edu_m_counts = self.df['educacion_madre'].value_counts().sort_index()
         etiquetas_m = [mapa_edu.get(x, str(x)) for x in edu_m_counts.index]
@@ -239,7 +264,6 @@ class PresentacionEstadistica(tk.Tk):
         ax3.set_title("Nivel Educativo: Madre")
         ax3.tick_params(axis='x', rotation=15, labelsize=8)
 
-        # 4. Gráfico de Barras: Educación Padre (Abajo - Derecha)
         ax4 = self.fig.add_subplot(224)
         edu_p_counts = self.df['educacion_padre'].value_counts().sort_index()
         etiquetas_p = [mapa_edu.get(x, str(x)) for x in edu_p_counts.index]
@@ -248,6 +272,13 @@ class PresentacionEstadistica(tk.Tk):
         ax4.tick_params(axis='x', rotation=15, labelsize=8)
 
         self.fig.tight_layout()
+
+    def mostrar_u6_analisis(self):
+        self.lbl_titulo.config(text="Unidad 6 — EDA (Análisis)")
+        notas = self.df["nota_final"].dropna()
+        media = media_muestral(notas)
+        desvio = desvio_muestral(notas)
+        cv = coef_variacion(notas)
 
         concepto = "Distribución Cuantitativa y Categórica del Perfil Estudiantil."
         explicacion = (
@@ -264,16 +295,15 @@ class PresentacionEstadistica(tk.Tk):
             "perfil social de los estudiantes. Esto es clave ya que factores como la educación parental o el "
             "estado sentimental pueden ser variables ocultas que influyan en el desempeño en matemáticas."
         )
-        
         self._actualizar_texto(concepto, explicacion, formula, resultado, interpretacion)
 
-    def mostrar_u7(self):
-        self.lbl_titulo.config(text="Unidad 7 — Estimación Puntual")
+    # ===========================================================================
+    # UNIDAD 7
+    # ===========================================================================
+    def mostrar_u7_graficos(self):
+        self.lbl_titulo.config(text="Unidad 7 — Estimación Puntual (Gráfico)")
         y_int = self.df["nota_final"].dropna().to_numpy()
-        n_int = len(y_int)
         xbarra_int = media_muestral(y_int)
-        s2_int = varianza_muestral(y_int)
-        s_int = desvio_muestral(y_int)
 
         ax = self.fig.add_subplot(111)
         ax.boxplot(y_int, vert=False, patch_artist=True, boxprops=dict(facecolor="#9b59b6"))
@@ -284,16 +314,26 @@ class PresentacionEstadistica(tk.Tk):
         ax.legend()
         self.fig.tight_layout()
 
+    def mostrar_u7_analisis(self):
+        self.lbl_titulo.config(text="Unidad 7 — Estimación Puntual (Análisis)")
+        y_int = self.df["nota_final"].dropna().to_numpy()
+        n_int = len(y_int)
+        xbarra_int = media_muestral(y_int)
+        s2_int = varianza_muestral(y_int)
+        s_int = desvio_muestral(y_int)
+
         concepto = "Estimadores Puntuales (Media y Varianza Poblacional)"
         explicacion = "Utilizamos los datos de la muestra para estimar parámetros desconocidos de la población total de estudiantes de las escuelas evaluadas."
         formula = "Estimador de μ: x̄ = Σxi / n\nEstimador de σ²: S² = Σ(xi - x̄)² / (n - 1)"
         resultado = f"Tamaño (n) = {n_int}\nx̄ = {xbarra_int:.4f}\nS² = {s2_int:.4f}\nS = {s_int:.4f}"
         interpretacion = f"Nuestra mejor aproximación al promedio poblacional real de la nota final es {xbarra_int:.2f}. La dispersión estimada en la población es de {s_int:.2f} puntos. Se utiliza n-1 en el cálculo de S² para asegurar un estimador insesgado."
-
         self._actualizar_texto(concepto, explicacion, formula, resultado, interpretacion)
 
-    def mostrar_u8(self):
-        self.lbl_titulo.config(text="Unidad 8 — Estimación por Intervalos")
+    # ===========================================================================
+    # UNIDAD 8
+    # ===========================================================================
+    def mostrar_u8_graficos(self):
+        self.lbl_titulo.config(text="Unidad 8 — Intervalos de Confianza (Gráficos)")
         y_int = self.df["nota_final"].dropna().to_numpy()
         n_int = len(y_int)
         xbarra_int = media_muestral(y_int)
@@ -327,20 +367,34 @@ class PresentacionEstadistica(tk.Tk):
         ax2.set_title(rf"IC 95% para $\sigma^2$: [{ic_sigma2[0]:.2f}, {ic_sigma2[1]:.2f}]")
         self.fig.tight_layout()
 
+    def mostrar_u8_analisis(self):
+        self.lbl_titulo.config(text="Unidad 8 — Intervalos de Confianza (Análisis)")
+        y_int = self.df["nota_final"].dropna().to_numpy()
+        n_int = len(y_int)
+        xbarra_int = media_muestral(y_int)
+        s2_int = varianza_muestral(y_int)
+        s_int = desvio_muestral(y_int)
+        gl = n_int - 1
+        ic_mu = stats.t.interval(1 - ALFA, df=gl, loc=xbarra_int, scale=s_int/np.sqrt(n_int))
+        chi2_der = stats.chi2.ppf(1 - ALFA / 2, df=gl)
+        chi2_izq = stats.chi2.ppf(ALFA / 2, df=gl)
+        ic_sigma2 = ((gl * s2_int) / chi2_der, (gl * s2_int) / chi2_izq)
+
         concepto = "Intervalos de Confianza para la Media (μ) y Varianza (σ²)"
         explicacion = "Calculamos un rango de valores en el cual, con una confianza del 95%, se encuentran la nota media y su dispersión a nivel poblacional."
         formula = r"IC(μ): x̄ ± t_{1-α/2, n-1} * (S / √n)"
         resultado = f"IC 95% para μ: [{ic_mu[0]:.4f} ; {ic_mu[1]:.4f}]\nIC 95% para σ²: [{ic_sigma2[0]:.4f} ; {ic_sigma2[1]:.4f}]"
         interpretacion = "Si repitiéramos el muestreo múltiples veces, el 95% de los intervalos contendrían el parámetro poblacional real. Al encontrarse todo el intervalo de confianza para la media por encima de 10, hay fuertes indicios de una tendencia general a la aprobación."
-
         self._actualizar_texto(concepto, explicacion, formula, resultado, interpretacion)
 
-    def mostrar_u9(self):
-        self.lbl_titulo.config(text="Unidad 9 — Pruebas de Hipótesis")
+    # ===========================================================================
+    # UNIDAD 9
+    # ===========================================================================
+    def mostrar_u9_graficos(self):
+        self.lbl_titulo.config(text="Unidad 9 — Pruebas de Hipótesis (Gráfico)")
         y_int = self.df["nota_final"].dropna().to_numpy()
         n_int = len(y_int)
-        
-        t_obs, p_unilateral = stats.ttest_1samp(y_int, popmean=NOTA_APROBACION, alternative="greater")
+        t_obs, _ = stats.ttest_1samp(y_int, popmean=NOTA_APROBACION, alternative="greater")
         gl = n_int - 1
         t_crit_uni = stats.t.ppf(1 - ALFA, df=gl)
 
@@ -358,6 +412,14 @@ class PresentacionEstadistica(tk.Tk):
         ax.legend()
         self.fig.tight_layout()
 
+    def mostrar_u9_analisis(self):
+        self.lbl_titulo.config(text="Unidad 9 — Pruebas de Hipótesis (Análisis)")
+        y_int = self.df["nota_final"].dropna().to_numpy()
+        n_int = len(y_int)
+        t_obs, p_unilateral = stats.ttest_1samp(y_int, popmean=NOTA_APROBACION, alternative="greater")
+        gl = n_int - 1
+        t_crit_uni = stats.t.ppf(1 - ALFA, df=gl)
+
         concepto = "Contraste de Hipótesis para una Muestra"
         explicacion = "¿El rendimiento medio poblacional en matemáticas es significativamente mayor a 10 (condición de aprobado)? Evaluamos la evidencia aportada por nuestra muestra."
         formula = "H0: μ = 10 \nH1: μ > 10 (unilateral derecha)\nt_obs = (x̄ - 10) / (S / √n)"
@@ -367,21 +429,19 @@ class PresentacionEstadistica(tk.Tk):
             interpretacion = f"Como el p-valor ({p_unilateral:.4f}) es menor al nivel de significancia α (0.05), SE RECHAZA la hipótesis nula (H0). Hay evidencia estadística sólida de que el rendimiento medio poblacional en la materia es aprobatorio."
         else:
             interpretacion = "NO se rechaza H0. No hay evidencia estadística suficiente en esta muestra para afirmar que la nota media supera el 10."
-
         self._actualizar_texto(concepto, explicacion, formula, resultado, interpretacion)
 
-    def mostrar_u10(self):
-        self.lbl_titulo.config(text="Unidad 10 — Regresión Lineal Simple")
-        
+    # ===========================================================================
+    # UNIDAD 10: REGRESIÓN Y SUPUESTOS
+    # ===========================================================================
+    def mostrar_u10_graficos(self):
+        self.lbl_titulo.config(text="Unidad 10 — Regresión Lineal Simple (Gráfico)")
         reg = self.df[["nota_segundo_semestre", "nota_final"]].dropna()
         x = reg["nota_segundo_semestre"].to_numpy(dtype=float)
         y = reg["nota_final"].to_numpy(dtype=float)
-        n_obs = len(x)
         
-        r, p_pearson = stats.pearsonr(x, y)
         ajuste = stats.linregress(x, y)
         b1, b0 = ajuste.slope, ajuste.intercept
-        r2 = ajuste.rvalue ** 2
 
         ax = self.fig.add_subplot(111)
         ax.scatter(x, y, alpha=0.75, edgecolor="black", color="#3498DB", label="Estudiantes")
@@ -394,6 +454,18 @@ class PresentacionEstadistica(tk.Tk):
         ax.set_ylabel("Y = Nota Final (G3, 0-20)")
         ax.legend()
         self.fig.tight_layout()
+
+    def mostrar_u10_analisis(self):
+        self.lbl_titulo.config(text="Unidad 10 — Regresión Lineal Simple (Análisis)")
+        reg = self.df[["nota_segundo_semestre", "nota_final"]].dropna()
+        x = reg["nota_segundo_semestre"].to_numpy(dtype=float)
+        y = reg["nota_final"].to_numpy(dtype=float)
+        n_obs = len(x)
+        
+        r, _ = stats.pearsonr(x, y)
+        ajuste = stats.linregress(x, y)
+        b1, b0 = ajuste.slope, ajuste.intercept
+        r2 = ajuste.rvalue ** 2
 
         concepto = "Regresión Lineal Simple y Correlación"
         explicacion = (
@@ -419,12 +491,10 @@ class PresentacionEstadistica(tk.Tk):
             f"estimada se incrementa en {b1:.3f} puntos. (Nota: Esto muestra una altísima asociación debido a que "
             "el desempeño histórico define fuertemente el cierre del año escolar)."
         )
-
         self._actualizar_texto(concepto, explicacion, formula, resultado, interpretacion)
 
-    def mostrar_supuestos(self):
-        self.lbl_titulo.config(text="Verificación de Supuestos - Regresión Lineal")
-        
+    def mostrar_supuestos_graficos(self):
+        self.lbl_titulo.config(text="Verificación de Supuestos de MCO (Gráficos)")
         reg = self.df[["nota_segundo_semestre", "nota_final"]].dropna()
         x = reg["nota_segundo_semestre"].to_numpy(dtype=float)
         y = reg["nota_final"].to_numpy(dtype=float)
@@ -433,11 +503,49 @@ class PresentacionEstadistica(tk.Tk):
         y_pred = ajuste.intercept + ajuste.slope * x
         residuos = y - y_pred
         n = len(residuos)
+
+        ax1 = self.fig.add_subplot(221)
+        ax1.hist(residuos, bins=sturges(n), color="#9B59B6", edgecolor="black")
+        mean_res = np.mean(residuos)
+        ax1.axvline(mean_res, color="red", linestyle="--")
+        ax1.set_title("1. Normalidad: Distribución de Errores")
+        ax1.set_xlabel("Valor del Residuo")
+        ax1.set_ylabel("Frecuencia")
+
+        ax2 = self.fig.add_subplot(222)
+        stats.probplot(residuos, dist="norm", plot=ax2)
+        ax2.set_title("2. Normalidad: Q-Q Plot")
+        ax2.get_lines()[0].set_markerfacecolor('#9B59B6')
+        ax2.get_lines()[0].set_markeredgecolor('black')
+
+        ax3 = self.fig.add_subplot(223)
+        ax3.scatter(y_pred, residuos, alpha=0.75, color="#E67E22", edgecolor="black")
+        ax3.axhline(0, color="red", linestyle="--")
+        ax3.set_title("3. Homocedasticidad: Residuos vs Ajustados")
+        ax3.set_xlabel("Valores Predichos")
+        ax3.set_ylabel("Residuos")
+
+        ax4 = self.fig.add_subplot(224)
+        ax4.plot(range(1, n+1), residuos, marker='o', linestyle='-', alpha=0.75, color="#2ECC71", markerfacecolor="#27AE60")
+        ax4.axhline(0, color="red", linestyle="--")
+        ax4.set_title("4. Independencia: Residuos vs Orden")
+        ax4.set_xlabel("Orden de Observación")
+        ax4.set_ylabel("Residuos")
+
+        self.fig.tight_layout()
+
+    def mostrar_supuestos_analisis(self):
+        self.lbl_titulo.config(text="Análisis de Regresión - Verificación Analítica")
+        reg = self.df[["nota_segundo_semestre", "nota_final"]].dropna()
+        x = reg["nota_segundo_semestre"].to_numpy(dtype=float)
+        y = reg["nota_final"].to_numpy(dtype=float)
         
-        # 1. Normalidad (Prueba Analítica de Shapiro-Wilk)
+        ajuste = stats.linregress(x, y)
+        y_pred = ajuste.intercept + ajuste.slope * x
+        residuos = y - y_pred
+        n = len(residuos)
+
         stat_sw, p_sw = stats.shapiro(residuos)
-        
-        # 2. Media Cero (Intervalo de confianza)
         mean_res = np.mean(residuos)
         sem_res = stats.sem(residuos) if np.std(residuos) > 0 else 0
         if sem_res > 0:
@@ -445,74 +553,53 @@ class PresentacionEstadistica(tk.Tk):
         else:
             ic_res = (0, 0)
 
-        # -- Gráficos 2x2 --
-        # 1. Histograma para Normalidad
-        ax1 = self.fig.add_subplot(221)
-        ax1.hist(residuos, bins=sturges(n), color="#9B59B6", edgecolor="black")
-        ax1.axvline(mean_res, color="red", linestyle="--")
-        ax1.set_title("Normalidad: Histograma")
-        ax1.set_xlabel("Residuos")
-        ax1.set_ylabel("Frecuencia")
-
-        # 2. QQ-Plot para Normalidad
-        ax2 = self.fig.add_subplot(222)
-        stats.probplot(residuos, dist="norm", plot=ax2)
-        ax2.set_title("Normalidad: Q-Q Plot")
-        ax2.get_lines()[0].set_markerfacecolor('#9B59B6')
-        ax2.get_lines()[0].set_markeredgecolor('black')
-
-        # 3. Residuos vs Predichos para Homocedasticidad
-        ax3 = self.fig.add_subplot(223)
-        ax3.scatter(y_pred, residuos, alpha=0.75, color="#E67E22", edgecolor="black")
-        ax3.axhline(0, color="red", linestyle="--")
-        ax3.set_title("Homocedasticidad: Residuos vs Predichos")
-        ax3.set_xlabel("Valores Predichos (Ŷ)")
-        ax3.set_ylabel("Residuos")
-
-        # 4. Residuos vs Orden para Independencia
-        ax4 = self.fig.add_subplot(224)
-        ax4.plot(range(1, n+1), residuos, marker='o', linestyle='-', alpha=0.75, color="#2ECC71", markerfacecolor="#27AE60")
-        ax4.axhline(0, color="red", linestyle="--")
-        ax4.set_title("Independencia: Residuos vs Orden")
-        ax4.set_xlabel("Orden de Observación")
-        ax4.set_ylabel("Residuos")
-
-        self.fig.tight_layout()
-
-        concepto = "Análisis de Residuos (Errores del Modelo)"
+        concepto = "Verificación Analítica de Supuestos de Mínimos Cuadrados Ordinarios (MCO)"
         explicacion = (
-            "Para que un modelo de regresión lineal por Mínimos Cuadrados Ordinarios (MCO) sea estadísticamente válido, "
-            "sus residuos (e = Y - Ŷ) deben cumplir cuatro supuestos fundamentales:\n"
-            "1. Normalidad\n2. Media cero\n3. Homocedasticidad (Varianza constante)\n4. Independencia"
+            "Para validar la regresión lineal, analizamos los residuos (e = Y - Ŷ) buscando que cumplan:\n"
+            "1. Normalidad (evaluada con el test de Shapiro-Wilk)\n"
+            "2. Media Cero (evaluada con un Intervalo de Confianza para la media)\n"
+            "3. Homocedasticidad (dispersión uniforme)\n"
+            "4. Independencia (ausencia de autocorrelación)"
         )
         formula = "Residuo: e_i = Y_i - Ŷ_i\nEstadístico de Normalidad: Shapiro-Wilk (W)"
         
-        # Resultados estrictamente matemáticos
         resultado = (
             f"• Prueba Shapiro-Wilk (Normalidad): W = {stat_sw:.4f} | p-valor = {p_sw:.4f}\n"
             f"• Media de residuos: {mean_res:.4e} (tiende a 0)\n"
             f"• IC 95% para media de residuos: [{ic_res[0]:.4f} ; {ic_res[1]:.4f}]"
         )
 
-        # Análisis lógico para imprimir el texto
         int_norm = "NO SE RECHAZA el supuesto de normalidad" if p_sw > 0.05 else "SE RECHAZA el supuesto de normalidad"
         int_cero = "El IC INCLUYE el cero, por lo que el supuesto SE CUMPLE" if ic_res[0] <= 0 <= ic_res[1] else "El IC NO INCLUYE el cero"
 
         interpretacion = (
-            f"1. Normalidad: Al obtener un p-valor de {p_sw:.4f} (mayor a 0.05), {int_norm}. El histograma y el Q-Q plot lo respaldan visualmente.\n"
+            f"1. Normalidad: Con un p-valor de {p_sw:.4f} (fijando alfa = 0.05), {int_norm}.\n"
             f"2. Media Cero: {int_cero}. Por propiedad del método MCO, la media muestral de los errores siempre es exactamente cero.\n"
-            f"3. Homocedasticidad: El gráfico de dispersión no presenta forma de embudo o patrón evidente, indicando que la varianza es constante.\n"
-            f"4. Independencia: El gráfico secuencial muestra que los residuos oscilan de forma aleatoria, sin patrones de autocorrelación entre datos vecinos."
+            f"3. Homocedasticidad: Visualmente, la varianza es constante (el diagrama de dispersión no presenta forma de embudo).\n"
+            f"4. Independencia: La gráfica de secuencia no muestra tendencias ni patrones sistemáticos entre datos vecinos."
         )
-
         self._actualizar_texto(concepto, explicacion, formula, resultado, interpretacion)
 
     def guardar_grafico(self):
+        # Si se está en una pestaña de análisis, evitamos errores avisando al usuario
+        if self.indice_actual % 2 != 0:
+            messagebox.showinfo("Atención", "Esta pestaña es de análisis y no contiene un gráfico para guardar.")
+            return
+
         carpeta_graficos = Path(__file__).resolve().parent / "graficos"
         carpeta_graficos.mkdir(exist_ok=True)
         
-        nombres = ["u6_histograma", "u7_estimacion", "u8_intervalos", "u9_hipotesis", "u10_regresion", "u10_supuestos"]
-        nombre_archivo = f"{nombres[self.indice_actual]}.png"
+        # Mapeo de índices a nombres de archivo
+        nombres_graficos = {
+            0: "u6_eda_graficos",
+            2: "u7_estimacion_grafico",
+            4: "u8_intervalos_graficos",
+            6: "u9_hipotesis_grafico",
+            8: "u10_regresion_grafico",
+            10: "u10_supuestos_graficos"
+        }
+        
+        nombre_archivo = f"{nombres_graficos[self.indice_actual]}.png"
         ruta = carpeta_graficos / nombre_archivo
         
         self.fig.savefig(str(ruta), dpi=150, bbox_inches="tight")
