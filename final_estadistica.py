@@ -8,6 +8,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
 import pandas as pd
 from scipy import stats
+from scipy.interpolate import make_interp_spline 
 
 # ===========================================================================
 # 1. LÓGICA ESTADÍSTICA (Separada de la interfaz gráfica)
@@ -240,8 +241,51 @@ class PresentacionEstadistica(tk.Tk):
         k = sturges(n)
 
         ax1 = self.fig.add_subplot(221)
-        ax1.hist(notas, bins=k, color="#4A5A7B", edgecolor="black")
-        ax1.axvline(media, color="#E3655B", linestyle="--", label=f"Media = {media:.2f}")
+
+        frecuencias, limites, _ = ax1.hist(
+            notas,
+            bins=k,
+            color="#4A5A7B",
+            edgecolor="black"
+        )
+
+        # Calcular los puntos medios de cada intervalo
+        puntos_medios = (limites[:-1] + limites[1:]) / 2
+
+        # Puntos medios
+        puntos_medios = (limites[:-1] + limites[1:]) / 2
+
+        # Crear una curva suave
+        x_suave = np.linspace(puntos_medios.min(), puntos_medios.max(), 300)
+
+        spl = make_interp_spline(puntos_medios, frecuencias, k=2)
+        y_suave = spl(x_suave)
+
+        # Dibujar la curva
+        ax1.plot(
+            x_suave,
+            y_suave,
+            color="#E3655B",
+            linewidth=2,
+            label="Curva de frecuencias"
+        )
+
+        # Línea de la media
+        ax1.axvline(
+            media,
+            color="#E3655B",
+            linestyle="--",
+            label=f"Media = {media:.2f}"
+        )        
+
+        # Dibujar los puntos originales
+        ax1.scatter(
+            puntos_medios,
+            frecuencias,
+            color="#E3655B",
+            zorder=3
+        )
+
         ax1.set_title(r"Notas finales obtenidas en la asignatura ($\bar{x}$)")
         ax1.set_xlabel("Nota (0 a 20)")
         ax1.set_ylabel("Frecuencia")
