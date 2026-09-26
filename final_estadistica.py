@@ -254,7 +254,7 @@ class PresentacionEstadistica(tk.Tk):
         ax2.pie(pareja_counts, labels=labels_pareja, autopct='%1.1f%%', colors=colores_torta, startangle=90)
         ax2.set_title("Situación sentimental del alumno (En pareja)")
 
-        mapa_edu = {0: 'Ninguna', 1: 'Primaria', 2: 'Media', 3: 'Secundaria', 4: 'Superior'}
+        mapa_edu = {0: 'Ninguna', 1: 'Primaria incompleto', 2: 'Primario completo', 3: 'Secundaria', 4: 'Superior'}
         colores_barras = ['#4A5A7B', '#2D827A', '#6CB468', '#ECA400', '#E3655B']
 
         ax3 = self.fig.add_subplot(223)
