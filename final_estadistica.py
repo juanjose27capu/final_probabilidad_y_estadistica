@@ -530,7 +530,7 @@ class PresentacionEstadistica(tk.Tk):
         )
         interpretacion = (
             f"El coeficiente de correlación r = {r:.3f} indica una asociación lineal positiva "
-            "casi perfecta.\n\n"
+            "fuerte.\n\n"
             f"Al observar el valor de R², vemos que el modelo explica el {r2*100:.1f}% de la variabilidad observada en la nota final.\n\n"
             f"Por cada punto que el alumno suma en el segundo semestre, su nota final "
             f"estimada se incrementa en {b1:.3f} puntos (Valor de la pendiente)."
