@@ -68,18 +68,18 @@ class PresentacionEstadistica(tk.Tk):
         self.datos = datos
         self.df = datos.df_trabajo
         
-        self.title("Probabilidad y Estadística — Rendimiento en Matemáticas")
+        self.title("Probabilidad y Estadística - Proyecto Integrador")
         self.geometry("1100x750")
         self.configure(bg="#F0F0F0")
         
         # Definición de las nuevas pestañas desdobladas
         self.unidades = [
-            "Unidad 6 — EDA (Gráficos)", "Unidad 6 — EDA (Análisis)",
-            "Unidad 7 — Est. Puntual (Gráfico)", "Unidad 7 — Est. Puntual (Análisis)",
-            "Unidad 8 — Int. Confianza (Gráficos)", "Unidad 8 — Int. Confianza (Análisis)",
-            "Unidad 9 — Hipótesis (Gráfico)", "Unidad 9 — Hipótesis (Análisis)",
-            "Unidad 10 — Regresión (Gráfico)", "Unidad 10 — Regresión (Análisis)",
-            "Unidad 10 — Supuestos (Gráficos)", "Unidad 10 — Supuestos (Análisis)"
+            "Análisis Exploratorio de Datos - Gráficos", "Análisis Exploratorio de Datos - Interpretación",
+            "Gráfica de Estimación puntual", "Análisis de estimación puntual",
+            "Gráfica de intervalos de confianza", "Análisis de los intervalos de confianza",
+            "Pruebas de Hipótesis - Gráfico", "Análisis de la dócima",
+            "Gráfico de Modelo de Regresión Lineal", "Interpretación del modelo obtenido",
+            "Gráfico para el análisis de supuestos", "Análisis de los supuestos"
         ]
         self.indice_actual = 0
         
@@ -96,7 +96,7 @@ class PresentacionEstadistica(tk.Tk):
         frame_nav = tk.Frame(self, bg="#2C3E50", width=220)
         frame_nav.pack(side=tk.LEFT, fill=tk.Y)
         
-        titulo_nav = tk.Label(frame_nav, text="UNIDADES", bg="#2C3E50", fg="white", font=("Segoe UI", 14, "bold"))
+        titulo_nav = tk.Label(frame_nav, text="Contenidos", bg="#2C3E50", fg="white", font=("Segoe UI", 14, "bold"))
         titulo_nav.pack(pady=15)
         
         self.botones_nav = []
@@ -233,7 +233,7 @@ class PresentacionEstadistica(tk.Tk):
     # UNIDAD 6
     # ===========================================================================
     def mostrar_u6_graficos(self):
-        self.lbl_titulo.config(text="Unidad 6 — EDA (Gráficos)")
+        self.lbl_titulo.config(text="Análisis Exploratorio de Datos")
         notas = self.df["nota_final"].dropna()
         n = len(notas)
         media = media_muestral(notas)
@@ -242,7 +242,7 @@ class PresentacionEstadistica(tk.Tk):
         ax1 = self.fig.add_subplot(221)
         ax1.hist(notas, bins=k, color="#4A5A7B", edgecolor="black")
         ax1.axvline(media, color="#E3655B", linestyle="--", label=f"Media = {media:.2f}")
-        ax1.set_title(r"Distribución Notas Finales ($\bar{x}$)")
+        ax1.set_title(r"Notas finales obtenidas en la asignatura ($\bar{x}$)")
         ax1.set_xlabel("Nota (0 a 20)")
         ax1.set_ylabel("Frecuencia")
         ax1.legend()
@@ -252,7 +252,7 @@ class PresentacionEstadistica(tk.Tk):
         labels_pareja = ['Sí' if val == 0 else 'No' for val in pareja_counts.index]
         colores_torta = ['#FF9999', '#66B3FF']
         ax2.pie(pareja_counts, labels=labels_pareja, autopct='%1.1f%%', colors=colores_torta, startangle=90)
-        ax2.set_title("Estado Sentimental (En pareja)")
+        ax2.set_title("Situación sentimental del alumno (En pareja)")
 
         mapa_edu = {0: 'Ninguna', 1: 'Primaria', 2: 'Media', 3: 'Secundaria', 4: 'Superior'}
         colores_barras = ['#4A5A7B', '#2D827A', '#6CB468', '#ECA400', '#E3655B']
@@ -261,39 +261,39 @@ class PresentacionEstadistica(tk.Tk):
         edu_m_counts = self.df['educacion_madre'].value_counts().sort_index()
         etiquetas_m = [mapa_edu.get(x, str(x)) for x in edu_m_counts.index]
         ax3.bar(etiquetas_m, edu_m_counts.values, color=colores_barras[:len(edu_m_counts)])
-        ax3.set_title("Nivel Educativo: Madre")
+        ax3.set_title("Máximo nivel educativo alcanzado por la madre")
         ax3.tick_params(axis='x', rotation=15, labelsize=8)
 
         ax4 = self.fig.add_subplot(224)
         edu_p_counts = self.df['educacion_padre'].value_counts().sort_index()
         etiquetas_p = [mapa_edu.get(x, str(x)) for x in edu_p_counts.index]
         ax4.bar(etiquetas_p, edu_p_counts.values, color=colores_barras[:len(edu_p_counts)])
-        ax4.set_title("Nivel Educativo: Padre")
+        ax4.set_title("Máximo nivel educativo alcanzado el padre")
         ax4.tick_params(axis='x', rotation=15, labelsize=8)
 
         self.fig.tight_layout()
 
     def mostrar_u6_analisis(self):
-        self.lbl_titulo.config(text="Unidad 6 — EDA (Análisis)")
+        self.lbl_titulo.config(text="Análisis Exploratorio de Datos")
         notas = self.df["nota_final"].dropna()
         media = media_muestral(notas)
         desvio = desvio_muestral(notas)
         cv = coef_variacion(notas)
 
-        concepto = "Distribución Cuantitativa y Categórica del Perfil Estudiantil."
+        concepto = False
         explicacion = (
-            "El Análisis Exploratorio de Datos (EDA) abarca tanto el rendimiento académico como el "
-            "perfil demográfico de la muestra:\n"
-            "• Histograma: Distribución de la Nota Final (G3).\n"
-            "• Torta: Proporción de estudiantes en una relación de pareja.\n"
-            "• Barras: Nivel educativo alcanzado por madres y padres."
+            "Los gráficos mostrados abarcan tanto el rendimiento académico como el "
+            "perfil demográfico de la muestra de alumnos:\n"
+            "• Histograma: Representa la distribución de la nota final del alumno obtenida en la asignatura.\n"
+            "• Gráfico de torta: Proporción de estudiantes en una relación de pareja.\n"
+            "• Gráfico de barras: Máximo nivel educativo alcanzado por madres y padres."
         )
-        formula = "Media: x̄ = Σxi / n\nCV = (S / x̄) × 100"
-        resultado = f"Nota media (x̄) = {media:.2f} | Desvío (S) = {desvio:.2f} | CV = {cv:.3f}"
+        formula = "Media: x̄ = Σ xi / n\nCV = (S / x̄) × 100"
+        resultado = f"Nota media (x̄) = {media:.2f} | Desvío (S) = {desvio:.2f} | CV = {cv*100:.2f}%"
         interpretacion = (
             "Los gráficos categóricos complementan el análisis de rendimiento permitiendo observar el "
-            "perfil social de los estudiantes. Esto es clave ya que factores como la educación parental o el "
-            "estado sentimental pueden ser variables ocultas que influyan en el desempeño en matemáticas."
+            "perfil social de los estudiantes. El estudio considera que, factores como la educación parental o el "
+            "estado sentimental de los jóvenes pueden influir en el desempeño en matemáticas."
         )
         self._actualizar_texto(concepto, explicacion, formula, resultado, interpretacion)
 
@@ -301,7 +301,7 @@ class PresentacionEstadistica(tk.Tk):
     # UNIDAD 7
     # ===========================================================================
     def mostrar_u7_graficos(self):
-        self.lbl_titulo.config(text="Unidad 7 — Estimación Puntual (Gráfico)")
+        self.lbl_titulo.config(text="Estimación Puntual")
         y_int = self.df["nota_final"].dropna().to_numpy()
         xbarra_int = media_muestral(y_int)
 
@@ -315,25 +315,25 @@ class PresentacionEstadistica(tk.Tk):
         self.fig.tight_layout()
 
     def mostrar_u7_analisis(self):
-        self.lbl_titulo.config(text="Unidad 7 — Estimación Puntual (Análisis)")
+        self.lbl_titulo.config(text="Estimación Puntual")
         y_int = self.df["nota_final"].dropna().to_numpy()
         n_int = len(y_int)
         xbarra_int = media_muestral(y_int)
         s2_int = varianza_muestral(y_int)
         s_int = desvio_muestral(y_int)
 
-        concepto = "Estimadores Puntuales (Media y Varianza Poblacional)"
-        explicacion = "Utilizamos los datos de la muestra para estimar parámetros desconocidos de la población total de estudiantes de las escuelas evaluadas."
+        concepto = False
+        explicacion = "Utilizamos los datos de la muestra para estimar la media y varianza de la población total en relación a su nota final obtenida en la asignatura."
         formula = "Estimador de μ: x̄ = Σxi / n\nEstimador de σ²: S² = Σ(xi - x̄)² / (n - 1)"
         resultado = f"Tamaño (n) = {n_int}\nx̄ = {xbarra_int:.4f}\nS² = {s2_int:.4f}\nS = {s_int:.4f}"
-        interpretacion = f"Nuestra mejor aproximación al promedio poblacional real de la nota final es {xbarra_int:.2f}. La dispersión estimada en la población es de {s_int:.2f} puntos. Se utiliza n-1 en el cálculo de S² para asegurar un estimador insesgado."
+        interpretacion = f"La estimación de la media población obtenida a partir de la muestra aleatoria para la nota final es {xbarra_int:.2f}. La dispersión estimada es de {s_int:.2f} puntos. Se utiliza n-1 en el cálculo de S² para asegurar un estimador insesgado."
         self._actualizar_texto(concepto, explicacion, formula, resultado, interpretacion)
 
     # ===========================================================================
     # UNIDAD 8
     # ===========================================================================
     def mostrar_u8_graficos(self):
-        self.lbl_titulo.config(text="Unidad 8 — Intervalos de Confianza (Gráficos)")
+        self.lbl_titulo.config(text="Intervalos de Confianza")
         y_int = self.df["nota_final"].dropna().to_numpy()
         n_int = len(y_int)
         xbarra_int = media_muestral(y_int)
@@ -368,7 +368,7 @@ class PresentacionEstadistica(tk.Tk):
         self.fig.tight_layout()
 
     def mostrar_u8_analisis(self):
-        self.lbl_titulo.config(text="Unidad 8 — Intervalos de Confianza (Análisis)")
+        self.lbl_titulo.config(text="Intervalos de Confianza")
         y_int = self.df["nota_final"].dropna().to_numpy()
         n_int = len(y_int)
         xbarra_int = media_muestral(y_int)
@@ -380,9 +380,9 @@ class PresentacionEstadistica(tk.Tk):
         chi2_izq = stats.chi2.ppf(ALFA / 2, df=gl)
         ic_sigma2 = ((gl * s2_int) / chi2_der, (gl * s2_int) / chi2_izq)
 
-        concepto = "Intervalos de Confianza para la Media (μ) y Varianza (σ²)"
-        explicacion = "Calculamos un rango de valores en el cual, con una confianza del 95%, se encuentran la nota media y su dispersión a nivel poblacional."
-        formula = r"IC(μ): x̄ ± t_{1-α/2, n-1} * (S / √n)"
+        concepto = False
+        explicacion = "Calculamos un intervalo con una confianza del 95% para el promedio de la nota final obtenida y su dispersión a nivel poblacional."
+        formula = "Como no conocemos la varianza poblacional, usamos la distribución t-student con n-1 grados de libertad para la estimación de la media; para estimar la varianza recurrimos a la chi-cuadrada."
         resultado = f"IC 95% para μ: [{ic_mu[0]:.4f} ; {ic_mu[1]:.4f}]\nIC 95% para σ²: [{ic_sigma2[0]:.4f} ; {ic_sigma2[1]:.4f}]"
         interpretacion = "Si repitiéramos el muestreo múltiples veces, el 95% de los intervalos contendrían el parámetro poblacional real. Al encontrarse todo el intervalo de confianza para la media por encima de 10, hay fuertes indicios de una tendencia general a la aprobación."
         self._actualizar_texto(concepto, explicacion, formula, resultado, interpretacion)
@@ -391,7 +391,7 @@ class PresentacionEstadistica(tk.Tk):
     # UNIDAD 9
     # ===========================================================================
     def mostrar_u9_graficos(self):
-        self.lbl_titulo.config(text="Unidad 9 — Pruebas de Hipótesis (Gráfico)")
+        self.lbl_titulo.config(text="Pruebas de Hipótesis")
         y_int = self.df["nota_final"].dropna().to_numpy()
         n_int = len(y_int)
         t_obs, _ = stats.ttest_1samp(y_int, popmean=NOTA_APROBACION, alternative="greater")
@@ -413,17 +413,18 @@ class PresentacionEstadistica(tk.Tk):
         self.fig.tight_layout()
 
     def mostrar_u9_analisis(self):
-        self.lbl_titulo.config(text="Unidad 9 — Pruebas de Hipótesis (Análisis)")
+        self.lbl_titulo.config(text="Pruebas de Hipótesis")
         y_int = self.df["nota_final"].dropna().to_numpy()
         n_int = len(y_int)
         t_obs, p_unilateral = stats.ttest_1samp(y_int, popmean=NOTA_APROBACION, alternative="greater")
         gl = n_int - 1
         t_crit_uni = stats.t.ppf(1 - ALFA, df=gl)
 
-        concepto = "Contraste de Hipótesis para una Muestra"
-        explicacion = "¿El rendimiento medio poblacional en matemáticas es significativamente mayor a 10 (condición de aprobado)? Evaluamos la evidencia aportada por nuestra muestra."
-        formula = "H0: μ = 10 \nH1: μ > 10 (unilateral derecha)\nt_obs = (x̄ - 10) / (S / √n)"
-        resultado = f"t observado = {t_obs:.4f}\nt crítico = {t_crit_uni:.4f}\np-valor = {p_unilateral:.6f}"
+        concepto = False
+        explicacion = "¿El rendimiento medio poblacional en matemáticas es significativamente mayor a 10 (condición de aprobado)? Evaluamos la evidencia aportada por la muestra." \
+        "\n La pregunta supone realizar una dócima para la estimación de la media poblacional. Teniendo en cuenta que la varianza poblacional es deconocida, usamos a la variable pivotal t-student con n-1 grados de libertad."
+        formula = "H0: μ = 10 \nH1: μ > 10 \nt_obs = (x̄ - 10) / (S / √n)"
+        resultado = f"t observado = {t_obs:.3f}\nt crítico = {t_crit_uni:.3f}\np-valor = {p_unilateral:.4f}"
         
         if p_unilateral <= ALFA:
             interpretacion = f"Como el p-valor ({p_unilateral:.4f}) es menor al nivel de significancia α (0.05), SE RECHAZA la hipótesis nula (H0). Hay evidencia estadística sólida de que el rendimiento medio poblacional en la materia es aprobatorio."
@@ -435,7 +436,7 @@ class PresentacionEstadistica(tk.Tk):
     # UNIDAD 10: REGRESIÓN Y SUPUESTOS
     # ===========================================================================
     def mostrar_u10_graficos(self):
-        self.lbl_titulo.config(text="Unidad 10 — Regresión Lineal Simple (Gráfico)")
+        self.lbl_titulo.config(text="Regresión Lineal Simple")
         reg = self.df[["nota_segundo_semestre", "nota_final"]].dropna()
         x = reg["nota_segundo_semestre"].to_numpy(dtype=float)
         y = reg["nota_final"].to_numpy(dtype=float)
@@ -456,7 +457,7 @@ class PresentacionEstadistica(tk.Tk):
         self.fig.tight_layout()
 
     def mostrar_u10_analisis(self):
-        self.lbl_titulo.config(text="Unidad 10 — Regresión Lineal Simple (Análisis)")
+        self.lbl_titulo.config(text="Regresión Lineal Simple")
         reg = self.df[["nota_segundo_semestre", "nota_final"]].dropna()
         x = reg["nota_segundo_semestre"].to_numpy(dtype=float)
         y = reg["nota_final"].to_numpy(dtype=float)
@@ -467,9 +468,9 @@ class PresentacionEstadistica(tk.Tk):
         b1, b0 = ajuste.slope, ajuste.intercept
         r2 = ajuste.rvalue ** 2
 
-        concepto = "Regresión Lineal Simple y Correlación"
+        concepto = False 
         explicacion = (
-            "Pregunta de investigación: ¿Existe una relación lineal fuerte entre el desempeño "
+            "¿Existe una relación lineal fuerte entre el desempeño "
             "del alumno en el segundo semestre (G2) y su calificación definitiva (G3)?\n\n"
             "• X = nota_segundo_semestre\n"
             "• Y = nota_final"
@@ -484,17 +485,16 @@ class PresentacionEstadistica(tk.Tk):
             f"Ecuación: Ŷ = {b0:.3f} + {b1:.3f}X"
         )
         interpretacion = (
-            f"Dirección e Intensidad: El coeficiente r = {r:.3f} indica una asociación lineal positiva "
-            "EXTREMADAMENTE FUERTE.\n\n"
-            f"R²: El modelo explica el {r2*100:.1f}% de la variabilidad observada en la nota final.\n\n"
-            f"Pendiente: Por cada punto que el alumno suma en el segundo semestre, su nota final "
-            f"estimada se incrementa en {b1:.3f} puntos. (Nota: Esto muestra una altísima asociación debido a que "
-            "el desempeño histórico define fuertemente el cierre del año escolar)."
+            f"El coeficiente de correlación r = {r:.3f} indica una asociación lineal positiva "
+            "casi perfecta.\n\n"
+            f"Al observar el valor de R², vemos que el modelo explica el {r2*100:.1f}% de la variabilidad observada en la nota final.\n\n"
+            f"Por cada punto que el alumno suma en el segundo semestre, su nota final "
+            f"estimada se incrementa en {b1:.3f} puntos (Valor de la pendiente)."
         )
         self._actualizar_texto(concepto, explicacion, formula, resultado, interpretacion)
 
     def mostrar_supuestos_graficos(self):
-        self.lbl_titulo.config(text="Verificación de Supuestos de MCO (Gráficos)")
+        self.lbl_titulo.config(text="Verificación de Supuestos")
         reg = self.df[["nota_segundo_semestre", "nota_final"]].dropna()
         x = reg["nota_segundo_semestre"].to_numpy(dtype=float)
         y = reg["nota_final"].to_numpy(dtype=float)
@@ -553,7 +553,7 @@ class PresentacionEstadistica(tk.Tk):
         else:
             ic_res = (0, 0)
 
-        concepto = "Verificación Analítica de Supuestos de Mínimos Cuadrados Ordinarios (MCO)"
+        concepto = False 
         explicacion = (
             "Para validar la regresión lineal, analizamos los residuos (e = Y - Ŷ) buscando que cumplan:\n"
             "1. Normalidad (evaluada con el test de Shapiro-Wilk)\n"
@@ -569,8 +569,8 @@ class PresentacionEstadistica(tk.Tk):
             f"• IC 95% para media de residuos: [{ic_res[0]:.4f} ; {ic_res[1]:.4f}]"
         )
 
-        int_norm = "NO SE RECHAZA el supuesto de normalidad" if p_sw > 0.05 else "SE RECHAZA el supuesto de normalidad"
-        int_cero = "El IC INCLUYE el cero, por lo que el supuesto SE CUMPLE" if ic_res[0] <= 0 <= ic_res[1] else "El IC NO INCLUYE el cero"
+        int_norm = "No se rechaza el supuesto de normalidad" if p_sw > 0.05 else "Se rechaza el supuesto de normalidad"
+        int_cero = "El IC incluye el cero, por lo que el supuesto se cumple." if ic_res[0] <= 0 <= ic_res[1] else "El IC no incluye el cero"
 
         interpretacion = (
             f"1. Normalidad: Con un p-valor de {p_sw:.4f} (fijando alfa = 0.05), {int_norm}.\n"
