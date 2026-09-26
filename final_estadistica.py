@@ -609,7 +609,6 @@ class PresentacionEstadistica(tk.Tk):
         
         resultado = (
             f"• Prueba Shapiro-Wilk (Normalidad): W = {stat_sw:.4f} | p-valor = {p_sw:.4f}\n"
-            f"• Media de residuos: {mean_res:.4e} (tiende a 0)\n"
             f"• IC 95% para media de residuos: [{ic_res[0]:.4f} ; {ic_res[1]:.4f}]"
         )
 
@@ -618,7 +617,7 @@ class PresentacionEstadistica(tk.Tk):
 
         interpretacion = (
             f"1. Normalidad: Con un p-valor de {p_sw:.4f} (fijando alfa = 0.05), {int_norm}.\n"
-            f"2. Media Cero: {int_cero}. Por propiedad del método MCO, la media muestral de los errores siempre es exactamente cero.\n"
+            f"2. Media Cero: {int_cero}\n"
             f"3. Homocedasticidad: Visualmente, la varianza es constante (el diagrama de dispersión no presenta forma de embudo).\n"
             f"4. Independencia: La gráfica de secuencia no muestra tendencias ni patrones sistemáticos entre datos vecinos."
         )
