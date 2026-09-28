@@ -255,20 +255,6 @@ class PresentacionEstadistica(tk.Tk):
         # Puntos medios
         puntos_medios = (limites[:-1] + limites[1:]) / 2
 
-        # Crear una curva suave
-        x_suave = np.linspace(puntos_medios.min(), puntos_medios.max(), 300)
-
-        spl = make_interp_spline(puntos_medios, frecuencias, k=2)
-        y_suave = spl(x_suave)
-
-        # Dibujar la curva
-        ax1.plot(
-            x_suave,
-            y_suave,
-            color="#E3655B",
-            linewidth=2,
-            label="Curva de frecuencias"
-        )
 
         # Línea de la media
         ax1.axvline(
@@ -277,14 +263,6 @@ class PresentacionEstadistica(tk.Tk):
             linestyle="--",
             label=f"Media = {media:.2f}"
         )        
-
-        # Dibujar los puntos originales
-        ax1.scatter(
-            puntos_medios,
-            frecuencias,
-            color="#E3655B",
-            zorder=3
-        )
 
         ax1.set_title(r"Notas finales obtenidas en la asignatura ($\bar{x}$)")
         ax1.set_xlabel("Nota (0 a 20)")
@@ -547,14 +525,64 @@ class PresentacionEstadistica(tk.Tk):
         y_pred = ajuste.intercept + ajuste.slope * x
         residuos = y - y_pred
         n = len(residuos)
+        k = sturges(n)
+        mean_res = np.mean(residuos)
+        
+        ax1 = self.fig.add_subplot(221)
+
+        frecuencias, limites, _ = ax1.hist(
+            residuos,
+            bins=k,
+            color="#4A5A7B",
+            edgecolor="black"
+        )
+
+        # Calcular los puntos medios de cada intervalo
+        puntos_medios = (limites[:-1] + limites[1:]) / 2
+
+        # Puntos medios
+        puntos_medios = (limites[:-1] + limites[1:]) / 2
 
         ax1 = self.fig.add_subplot(221)
-        ax1.hist(residuos, bins=sturges(n), color="#9B59B6", edgecolor="black")
+
+        frecuencias, limites, _ = ax1.hist(
+            residuos,
+            bins=k,
+            color="#9B59B6", # Dejé el violeta que venías usando
+            edgecolor="black"
+        )
+
         mean_res = np.mean(residuos)
-        ax1.axvline(mean_res, color="red", linestyle="--")
+        std_res = np.std(residuos, ddof=1)
+
+        # Crear una campana de Gauss (Normal teórica)
+        x_norm = np.linspace(limites.min(), limites.max(), 300)
+        # Para que la campana coincida con la escala del eje Y (conteo), 
+        # multiplicamos la densidad por la cantidad de datos (n) y el ancho del bin
+        ancho_bin = limites[1] - limites[0]
+        y_norm = stats.norm.pdf(x_norm, mean_res, std_res) * n * ancho_bin
+
+        # Dibujar la campana teórica
+        ax1.plot(
+            x_norm,
+            y_norm,
+            color="#E3655B",
+            linewidth=2,
+            label="Normal Teórica"
+        )
+
+        # Línea de la media
+        ax1.axvline(
+            mean_res,
+            color="#E3655B",
+            linestyle="--",
+            label=f"Media = {mean_res:.2f}"
+        )        
+
         ax1.set_title("1. Normalidad: Distribución de Errores")
         ax1.set_xlabel("Valor del Residuo")
         ax1.set_ylabel("Frecuencia")
+        ax1.legend()
 
         ax2 = self.fig.add_subplot(222)
         stats.probplot(residuos, dist="norm", plot=ax2)
